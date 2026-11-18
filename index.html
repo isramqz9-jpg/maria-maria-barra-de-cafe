@@ -270,7 +270,7 @@ footer.site .serif{color:var(--ink);font-size:1.3rem}
     <div class="sec-head">
       <p class="kick">NUESTRO MENÚ</p>
       <h2>¿Qué se te <em>antoja hoy?</em></h2>
-      <p>Elige tus bebidas y crepas, ajusta cantidades y agrega notas (tipo de leche, sin azúcar, extra shot…). Los precios ya vienen en cada producto y el total se calcula solo; al final envías todo por WhatsApp y ahí te confirman disponibilidad y tiempo de preparación. Las crepas no siempre se hacen: pregunta por disponibilidad.</p>
+      <p>Elige tus bebidas y crepas, ajusta cantidades y agrega notas (tipo de leche, sin azúcar, extra shot…). Los precios ya vienen en cada producto y el total se calcula solo; al final envías todo por WhatsApp y ahí te confirman disponibilidad y tiempo de preparación. Para las crepas, pregunta por disponibilidad de ingredientes.</p>
     </div>
     <div class="tools">
       <input class="search" id="search" type="search" placeholder="Buscar: latte, matcha, frappé, taro, crepa…" aria-label="Buscar en el menú">
@@ -352,10 +352,10 @@ footer.site .serif{color:var(--ink);font-size:1.3rem}
     </div>
     <div class="loc-card">
       <span class="badge-llevar">🥤 SOLO PARA LLEVAR</span>
-      <p class="addr">Calle Fuente Brillante 1730, Interior 71 D, segundo nivel,<br>Av. Villa Fontana Diamante, 45200 La Cuchilla, Jal.</p>
+      <p class="addr">Calle Fuente Brillante 1730, Interior 71 D, segundo nivel, C.P. 45200,<br>cruza con Fuente Topacio, La Cuchilla, Jal.</p>
       <p class="sub">Pide por WhatsApp, te lo preparamos y lo recoges en barra para llevar. También llevamos la barra a tus eventos.</p>
       <div class="loc-actions">
-        <a class="btn btn-event" href="https://www.google.com/maps/dir/?api=1&destination=20.7737643,-103.4710158" target="_blank" rel="noopener">📍 Cómo llegar</a>
+        <a class="btn btn-event" href="https://www.google.com/maps/dir/?api=1&destination=Calle%20Fuente%20Brillante%201730%2C%20Interior%2071%20D%2C%20segundo%20nivel%2C%20C.P.%2045200%2C%20cruza%20con%20Fuente%20Topacio%2C%20La%20Cuchilla%2C%20Jal." target="_blank" rel="noopener">📍 Cómo llegar</a>
         <a class="btn btn-wa" href="https://wa.me/523329335024?text=Hola%20Mar%C3%ADa%20Mar%C3%ADa%2C%20quiero%20hacer%20un%20pedido%20para%20llevar." target="_blank" rel="noopener">Pedir para llevar</a>
       </div>
     </div>
@@ -408,7 +408,7 @@ footer.site .serif{color:var(--ink);font-size:1.3rem}
 
 <footer class="site"><div class="wrap">
   <p class="serif">maría maría — Barra de Café</p>
-  <p>Buen café ♡ Mejores momentos · Solo para llevar · Calle Fuente Brillante 1730, Interior 71 D, segundo nivel, Av. Villa Fontana Diamante, 45200 La Cuchilla, Jal. · Pedidos y eventos por WhatsApp: 33 2933 5024 · Instagram: @maria_maria_cafe</p>
+  <p>Buen café ♡ Mejores momentos · Solo para llevar · Calle Fuente Brillante 1730, Interior 71 D, segundo nivel, C.P. 45200, cruza con Fuente Topacio, La Cuchilla, Jal. · Pedidos y eventos por WhatsApp: 33 2933 5024 · Instagram: @maria_maria_cafe</p>
 </div></footer>
 
 <!-- Floating cart bar -->
@@ -493,8 +493,8 @@ var MENU = [
   ["Frappé Mazapán","Frappé cremoso con el dulce sabor del mazapán.",69]
  ]},
  {cat:"Crepas", items:[
-  ["Crepa Dulce","Crepa dulce a tu gusto. Elige cuántos ingredientes quieres y escríbelos en la nota de tu pedido al agregarla. Pregunta por disponibilidad: no siempre se hacen.",null,[{n:1,price:55},{n:2,price:65},{n:3,price:75}]],
-  ["Crepa Salada","Crepa salada a tu gusto. Elige cuántos ingredientes quieres y escríbelos en la nota de tu pedido al agregarla. Pregunta por disponibilidad: no siempre se hacen.",null,[{n:2,price:75},{n:3,price:85},{n:4,price:95}]]
+  ["Crepa Dulce","Crepa dulce a tu gusto. Elige cuántos ingredientes quieres y escríbelos en la nota de tu pedido al agregarla. Pregunta por disponibilidad de ingredientes.",null,[{n:1,price:55},{n:2,price:65},{n:3,price:75}]],
+  ["Crepa Salada","Crepa salada a tu gusto. Elige cuántos ingredientes quieres y escríbelos en la nota de tu pedido al agregarla. Pregunta por disponibilidad de ingredientes.",null,[{n:2,price:75},{n:3,price:85},{n:4,price:95}]]
  ]},
  {cat:"Ingredientes Extra", items:[
   ["Extra Espresso Café","Shot extra de espresso para intensificar tu bebida.",10],
@@ -533,7 +533,7 @@ function renderMenu(){
     var h=document.createElement("div"); h.className="cat-title"; h.innerHTML="<h3></h3>"; h.querySelector("h3").textContent=c.cat; root.appendChild(h);
     if(c.cat==="Crepas"){
       var note=document.createElement("div"); note.className="cat-note";
-      note.innerHTML="<b>Pregunta por disponibilidad:</b> las crepas no siempre se hacen. Agrégalas a tu pedido eligiendo el número de ingredientes y por WhatsApp te confirmamos si hay crepas ese día.";
+      note.innerHTML="<b>Pregunta por disponibilidad de ingredientes:</b> agrégalas a tu pedido eligiendo el número de ingredientes y por WhatsApp te confirmamos la disponibilidad de ingredientes.";
       root.appendChild(note);
     }
     var g=document.createElement("div"); g.className="grid";

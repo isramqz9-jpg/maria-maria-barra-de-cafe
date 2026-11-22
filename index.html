@@ -370,6 +370,22 @@ footer.site .copy{margin-top:22px;padding-top:18px;border-top:1px solid rgba(233
 .dfoot .send{width:100%}
 .hint{margin-top:10px;font-size:.8rem;line-height:1.45;text-align:center;color:var(--muted)}
 .noscript{margin:20px auto 0;max-width:620px;padding:14px 18px;text-align:center;border:1px dashed var(--gold);border-radius:14px;color:var(--ink2)}
+/* ===== Animaciones de movimiento ===== */
+/* 1 · Crossfade: al cambiar de categoría, la lista anterior se desvanece mientras la nueva aparece */
+#menuRoot{position:relative}
+#menuRoot .xf-in{animation:xfIn .3s ease both}
+#menuRoot .xf-out{position:absolute;margin:0;pointer-events:none;z-index:2;animation:xfOut .3s ease both}
+@keyframes xfIn{from{opacity:0}to{opacity:1}}
+@keyframes xfOut{from{opacity:1}to{opacity:0}}
+/* 2 · Shared Element: el nombre del producto viaja hasta el encabezado del pedido */
+.fly-name{position:fixed;z-index:90;pointer-events:none;font-weight:600;color:var(--goldt);white-space:nowrap;transform-origin:center;text-shadow:0 2px 14px rgba(42,26,16,.25)}
+/* 3 · Magnification: base para que los enlaces de navegación puedan escalar (el JS pone la escala) */
+@media (hover:hover) and (pointer:fine){
+  .nav a,footer.site .fn a{display:inline-block;transition:transform .18s ease-out}
+}
+/* 4 · Blur: con el pedido abierto, el resto de la página se desenfoca y se atenúa */
+main,.topbar,footer.site,.floatbar{transition:filter .35s ease}
+body.cart-open main,body.cart-open .topbar,body.cart-open footer.site,body.cart-open .floatbar{filter:blur(5px) brightness(.93)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}.js .reveal{opacity:1;transform:none}}
 </style>
 </head>
@@ -781,7 +797,7 @@ var chipsEl = $("chips");
   b.addEventListener("click",function(){
     activeCat=c;
     document.querySelectorAll(".chip").forEach(function(x){ x.classList.toggle("on",x.textContent===c); });
-    renderMenu();
+    crossfadeMenu();
     b.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"});
   });
   chipsEl.appendChild(b);
@@ -805,7 +821,8 @@ function buildRow(c,it){
   var row=el("div","row");
   var main=el("div");
   var top=el("div","r-top");
-  top.appendChild(el("h4",null,it[0]));
+  var nameEl=el("h4",null,it[0]);
+  top.appendChild(nameEl);
   top.appendChild(el("span","dots"));
   var priceEl=el("span","r-price");
   top.appendChild(priceEl);
@@ -830,7 +847,7 @@ function buildRow(c,it){
     ab.setAttribute("aria-label","Agregar "+it[0]+" al pedido"); ab.dataset.base=it[0];
     ab.addEventListener("click",function(){
       var n=Number(sel.value), p=Number(sel.options[sel.selectedIndex].getAttribute("data-price"));
-      focusSpec={crepa:it[0]}; addCrepaVariant(c.cat,it[0],n,p);
+      focusSpec={crepa:it[0]}; flyToCart(nameEl,it[0]); addCrepaVariant(c.cat,it[0],n,p);
     });
     act.appendChild(ab);
     row.style.alignItems="end";
@@ -841,7 +858,7 @@ function buildRow(c,it){
     else{
       var b=el("button","add"); b.type="button"; b.appendChild(icon("plus"));
       b.setAttribute("aria-label","Agregar "+it[0]); b.dataset.ctx="menu"; b.dataset.k=k; b.dataset.act="add";
-      b.addEventListener("click",function(){ focusSpec={ctx:"menu",k:k,act:"inc"}; addItem(k); });
+      b.addEventListener("click",function(){ focusSpec={ctx:"menu",k:k,act:"inc"}; flyToCart(nameEl,it[0]); addItem(k); });
       act.appendChild(b);
     }
   }
@@ -872,6 +889,50 @@ function renderMenu(){
   });
   if(any) root.appendChild(bento);
   $("emptyMsg").style.display = any ? "none" : "block";
+}
+
+/* ---------- Animaciones: Crossfade y Shared Element ---------- */
+function reducedMotion(){ return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
+function crossfadeMenu(){
+  var root=$("menuRoot");
+  var old=root.querySelector(".bento");
+  var t=0,l=0,w=0;
+  if(old){
+    var s=old.getBoundingClientRect(), rr=root.getBoundingClientRect();
+    t=s.top-rr.top; l=s.left-rr.left; w=s.width;
+  }
+  renderMenu();
+  var nw=root.querySelector(".bento");
+  if(!old || !nw || reducedMotion()) return;
+  nw.classList.add("xf-in");
+  old.classList.add("xf-out");
+  old.setAttribute("aria-hidden","true");
+  old.querySelectorAll("[id]").forEach(function(n){ n.removeAttribute("id"); });
+  old.querySelectorAll("button,select,input,a").forEach(function(n){ n.tabIndex=-1; });
+  old.style.top=t+"px"; old.style.left=l+"px"; old.style.width=w+"px";
+  root.appendChild(old);
+  setTimeout(function(){ if(old.parentNode) old.parentNode.removeChild(old); },340);
+}
+function flyToCart(sourceEl,text){
+  if(!sourceEl || reducedMotion() || !sourceEl.animate) return;
+  var target = (drawer.classList.contains("open") ? drawer.querySelector("header h3") : $("openCart"));
+  if(!target) return;
+  var s=sourceEl.getBoundingClientRect(), tg=target.getBoundingClientRect();
+  if(!s.width || !tg.width) return;
+  var cs=getComputedStyle(sourceEl);
+  var ghost=el("div","fly-name",text);
+  ghost.style.left=s.left+"px"; ghost.style.top=s.top+"px";
+  ghost.style.fontFamily=cs.fontFamily; ghost.style.fontSize=cs.fontSize;
+  document.body.appendChild(ghost);
+  var dx=(tg.left+tg.width/2)-(s.left+Math.min(s.width,120)/2);
+  var dy=(tg.top+tg.height/2)-(s.top+s.height/2);
+  var anim=ghost.animate([
+    {transform:"translate(0,0) scale(1)",opacity:"1"},
+    {transform:"translate("+(dx*.45)+"px,"+(dy-46)+"px) scale(1.3)",opacity:"1",offset:.55},
+    {transform:"translate("+dx+"px,"+dy+"px) scale(.55)",opacity:".2"}
+  ],{duration:640,easing:"cubic-bezier(.25,.8,.3,1)",fill:"forwards"});
+  anim.onfinish=function(){ if(ghost.parentNode) ghost.parentNode.removeChild(ghost); };
+  if(target.animate){ target.animate([{transform:"scale(1)"},{transform:"scale(1.14)"},{transform:"scale(1)"}],{duration:320,delay:480,easing:"ease-out"}); }
 }
 
 function findItem(k){
@@ -943,16 +1004,17 @@ function sync(){ renderMenu(); renderCart(); restoreFocus(); }
 
 /* ---------- Eventos de interfaz ---------- */
 $("search").addEventListener("input",function(e){ query=e.target.value.trim(); renderMenu(); });
-document.querySelector("[data-add-special]").addEventListener("click",function(){ addItem(key("Calientes","Capuchino")); openCartFn(); });
+document.querySelector("[data-add-special]").addEventListener("click",function(){ var btn=this; addItem(key("Calientes","Capuchino")); openCartFn(); flyToCart(btn,"Capuchino"); });
 
 var drawer=$("drawer"), overlay=$("overlay"), lastOpener=null;
 function openCartFn(){
   lastOpener=document.activeElement;
   drawer.classList.add("open"); overlay.classList.add("open"); $("floatbar").classList.remove("show");
+  document.body.classList.add("cart-open");
   document.body.style.overflow="hidden"; $("closeCart").focus();
 }
 function closeCartFn(){
-  drawer.classList.remove("open"); overlay.classList.remove("open"); document.body.style.overflow="";
+  drawer.classList.remove("open"); overlay.classList.remove("open"); document.body.classList.remove("cart-open"); document.body.style.overflow="";
   renderCart(); if(lastOpener && lastOpener.focus) lastOpener.focus();
 }
 $("openCart").addEventListener("click",openCartFn);
@@ -1053,6 +1115,31 @@ renderMenu(); renderCart();
   window.addEventListener("scroll",function(){ if(!ticking){ ticking=true; requestAnimationFrame(update);} },{passive:true});
   window.addEventListener("resize",function(){ if(!ticking){ ticking=true; requestAnimationFrame(update);} });
   update();
+})();
+</script>
+
+<script>
+/* Magnification: botones de contacto/redes y enlaces de navegación crecen al acercar el cursor (efecto dock).
+   Solo con cursor fino (hover:hover + pointer:fine); en táctil no interviene. */
+(function(){
+  var mq=window.matchMedia;
+  if(!mq) return;
+  if(mq("(prefers-reduced-motion: reduce)").matches) return;
+  if(!mq("(hover: hover) and (pointer: fine)").matches) return;
+  var targets=[].slice.call(document.querySelectorAll(".nav a, footer.site .fn a, .loc-actions .btn, .contact-card .btn"));
+  if(!targets.length) return;
+  var mx=-9999, my=-9999, raf=null, R=130, MAX=1.16;
+  function update(){
+    raf=null;
+    for(var i=0;i<targets.length;i++){
+      var t=targets[i], r=t.getBoundingClientRect();
+      var d=Math.hypot(mx-(r.left+r.width/2), my-(r.top+r.height/2));
+      var s = d<R ? 1+(MAX-1)*(1-d/R) : 1;
+      t.style.transform = s>1.005 ? "scale("+s.toFixed(3)+")" : "";
+    }
+  }
+  document.addEventListener("mousemove",function(e){ mx=e.clientX; my=e.clientY; if(!raf) raf=requestAnimationFrame(update); },{passive:true});
+  document.addEventListener("mouseleave",function(){ mx=-9999; my=-9999; if(!raf) raf=requestAnimationFrame(update); });
 })();
 </script>
 </body>
